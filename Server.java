@@ -5,9 +5,9 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+
 
 public class Server{
     private ServerSocket serverSocket;
@@ -16,6 +16,21 @@ public class Server{
 
     public Server(int portNo){
         this.portNo=portNo;
+    }
+
+    public static void requestFullfillment(String filePath , int contentLength , String contentType , PrintWriter out) throws IOException{
+        out.printf("HTTP/1.1 200 OK\n");
+        out.printf("Content-Length: %d\n", contentLength);
+        out.printf("Content-Type: %s\n\n", contentType);
+
+
+        BufferedReader br = new BufferedReader(new FileReader (new File (filePath)));
+        String buffer = br.readLine();
+        while(buffer != null){
+            out.println(buffer);
+            buffer = br.readLine();
+        }  
+        br.close();
     }
 
     private void processConnection() throws IOException{
@@ -29,21 +44,13 @@ public class Server{
             buffer = in.readLine();
         }
 
-        out.printf("HTTP/1.1 200 OK\n");
-        out.printf("Content-Length: 934\n");
-        out.printf("Content-Type: text/html\n\n");
-
-        BufferedReader br = new BufferedReader(new FileReader (new File ("docroot/home.html")));
-        String bf = br.readLine();
-        while(bf != null){
-            out.println(bf);
-            bf = br.readLine();
-        }
+        requestFullfillment("docroot/home.html" , 5000, "text/html", out);
+        requestFullfillment("docroot/scripts/style.css" , 1000,"text/css", out);
+        requestFullfillment("docroot/images/assignment-1-toosah00-2/docroot/images/assign2-screen.png, " , 1000, "image/png" , out );
         
         in.close();
         out.close();
-        br.close();
-        
+
     }
 
     public void run() throws IOException{
